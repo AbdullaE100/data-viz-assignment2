@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Analysis Visualizations</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+
+        .visual-container {
+            border: 2px solid #dee2e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .vega-embed {
+            width: 100%;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="my-5 text-center">
+            <h1>Worldwide Movie Analysis</h1>
+            <p>Explore the trends in movies, including ratings, genres, and countries of origin. The visualizations below provide insights into the global movie industry over time.</p>
+        </header>
+
+        <!-- World Map Visualisation -->
+        <div class="visual-container">
+            <h2>Average Movie Ratings by Country</h2>
+            <p>This map shows the average movie ratings by country, allowing us to explore which regions produce higher-rated movies. Use the filters to select genres and decades to focus on specific trends.</p>
+            <div id="world-map"></div>
+        </div>
+
+        <!-- Heat Map Visualisation -->
+        <div class="visual-container">
+            <h2>Average Movie Ratings by Genre and Decade</h2>
+            <p>The heat map displays the average ratings of movies categorized by genre and decade, allowing us to identify trends in different movie genres over time. Use the filters to adjust the view by country and minimum number of movies per cell.</p>
+            <div id="heat-map"></div>
+        </div>
+
+        <!-- Donut Chart Visualisation -->
+        <div class="visual-container">
+            <h2>Distribution of Movies by Genre</h2>
+            <p>This donut chart shows the distribution of movies across different genres. Interactive filters allow you to refine the view based on movie ratings and genres.</p>
+            <div id="donut-chart"></div>
+        </div>
+
+        <!-- Bar Chart Visualisation -->
+        <div class="visual-container">
+            <h2>Number of Movies by Genre</h2>
+            <p>The bar chart displays the number of movies produced in each genre, giving us a comprehensive overview of genre popularity. Use the slider to adjust the minimum number of movies displayed.</p>
+            <div id="bar-chart"></div>
+        </div>
+    </div>
+
+    <script>
+        // Embed the World Map Visualization
+        vegaEmbed("#world-map", {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "width": 800,
+            "height": 400,
+            "data": {
+                "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+            },
+            "params": [
+                {
+                    "name": "genre_selection",
+                    "bind": {
+                        "input": "select",
+                        "options": [null, "Drama", "Comedy", "Action", "Thriller", "Romance", "Adventure", "Crime", "Sci-Fi", "Horror"],
+                        "labels": ["All", "Drama", "Comedy", "Action", "Thriller", "Romance", "Adventure", "Crime", "Sci-Fi", "Horror"],
+                        "name": "Genre: "
+                    }
+                },
+                {
+                    "name": "decade_selection",
+                    "bind": {
+                        "input": "select",
+                        "options": [null, 1980, 1990, 2000, 2010, 2020],
+                        "labels": ["All", "1980s", "1990s", "2000s", "2010s", "2020s"],
+                        "name": "Decade: "
+                    }
+                }
+            ],
+            "transform": [
+                {
+                    "filter": "genre_selection == null || datum.genre == genre_selection"
+                },
+                {
+                    "filter": "decade_selection == null || (datum.year >= decade_selection && datum.year < decade_selection + 10)"
+                },
+                {
+                    "aggregate": [
+                        { "op": "mean", "field": "score", "as": "average_rating" },
+                        { "op": "count", "as": "movie_count" }
+                    ],
+                    "groupby": ["country"]
+                },
+                {
+                    "lookup": "country",
+                    "from": {
+                        "data": {
+                            "url": "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json",
+                            "format": {
+                                "type": "topojson",
+                                "feature": "countries"
+                            }
+                        },
+                        "key": "properties.name"
+                    },
+                    "as": "geo"
+                },
+                {
+                    "filter": "datum.geo != null"
+                }
+            ],
+            "projection": {
+                "type": "equirectangular"
+            },
+            "mark": {
+                "type": "geoshape",
+                "stroke": "#fff",
+                "strokeWidth": 0.5
+            },
+            "encoding": {
+                "shape": {
+                    "field": "geo",
+                    "type": "geojson"
+                },
+                "color": {
+                    "field": "average_rating",
+                    "type": "quantitative",
+                    "scale": {
+                        "scheme": "blues",
+                        "domain": [0, 10]
+                    },
+                    "title": "Average Rating"
+                },
+                "tooltip": [
+                    { "field": "country", "type": "nominal", "title": "Country" },
+                    { "field": "average_rating", "type": "quantitative", "title": "Average Rating", "format": ".2f" },
+                    { "field": "movie_count", "type": "quantitative", "title": "Number of Movies" }
+                ]
+            },
+            "config": {
+                "view": {
+                    "stroke": null
+                }
+            }
+        });
+
+        // Embed the Heat Map Visualization
+        vegaEmbed("#heat-map", {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "width": 500,
+            "height": 300,
+            "data": {
+                "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+            },
+            "params": [
+                {
+                    "name": "min_movies",
+                    "value": 5,
+                    "bind": {
+                        "input": "range",
+                        "min": 1,
+                        "max": 50,
+                        "step": 1,
+                        "name": "Minimum Movies per Cell: "
+                    }
+                },
+                {
+                    "name": "country_selection",
+                    "bind": {
+                        "input": "select",
+                        "options": [null, "United States", "United Kingdom", "France", "Germany", "Japan", "Canada", "Italy", "Australia", "Spain", "India"],
+                        "labels": ["All", "United States", "United Kingdom", "France", "Germany", "Japan", "Canada", "Italy", "Australia", "Spain", "India"],
+                        "name": "Country: "
+                    }
+                }
+            ],
+            "transform": [
+                {
+                    "calculate": "floor(datum.year / 10) * 10",
+                    "as": "decade"
+                },
+                {
+                    "filter": "country_selection == null || datum.country == country_selection"
+                },
+                {
+                    "aggregate": [
+                        { "op": "mean", "field": "score", "as": "average_rating" },
+                        { "op": "count", "as": "movie_count" }
+                    ],
+                    "groupby": ["genre", "decade"]
+                },
+                {
+                    "filter": "datum.movie_count >= min_movies"
+                }
+            ],
+            "mark": "rect",
+            "encoding": {
+                "x": {
+                    "field": "decade",
+                    "type": "ordinal",
+                    "title": "Decade"
+                },
+                "y": {
+                    "field": "genre",
+                    "type": "ordinal",
+                    "title": "Genre"
+                },
+                "color": {
+                    "field": "average_rating",
+                    "type": "quantitative",
+                    "scale": {
+                        "scheme": "viridis",
+                        "domain": [5, 9]
+                    },
+                    "title": "Average Rating"
+                },
+                "tooltip": [
+                    { "field": "genre", "type": "nominal", "title": "Genre" },
+                    { "field": "decade", "type": "ordinal", "title": "Decade" },
+                    { "field": "average_rating", "type": "quantitative", "title": "Average Rating", "format": ".2f" },
+                    { "field": "movie_count", "type": "quantitative", "title": "Number of Movies" }
+                ]
+            },
+            "config": {
+                "view": {
+                    "stroke": null
+                },
+                "axis": {
+                    "grid": true
+                }
+            }
+        });
+
+        // Embed the Bar Chart Visualization
+        vegaEmbed("#bar-chart", {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "title": "Number of Movies by Genre",
+            "description": "A bar chart showing the number of movies in each genre, with interactive filters for genre selection and a slider for the minimum number of movies.",
+            "data": {
+                "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+            },
+            "transform": [
+                {
+                    "aggregate": [{ "op": "count", "as": "count" }],
+                    "groupby": ["genre"]
+                },
+                {
+                    "filter": "datum.count >= genreCountFilter"
+                }
+            ],
+            "mark": "bar",
+            "encoding": {
+                "x": {
+                    "field": "genre",
+                    "type": "nominal",
+                    "axis": { "title": "Genre", "labelAngle": -45 }
+                },
+                "y": {
+                    "field": "count",
+                    "type": "quantitative",
+                    "axis": { "title": "Number of Movies" }
+                },
+                "tooltip": [
+                    { "field": "genre", "type": "nominal", "title": "Genre" },
+                    { "field": "count", "type": "quantitative", "title": "Number of Movies" }
+                ],
+                "color": {
+                    "condition": {
+                        "param": "genreFilter",
+                        "field": "genre",
+                        "type": "nominal"
+                    },
+                    "value": "lightgray"
+                }
+            },
+            "params": [
+                {
+                    "name": "genreFilter",
+                    "select": { "type": "point", "fields": ["genre"] },
+                    "bind": "legend"
+                },
+                {
+                    "name": "genreCountFilter",
+                    "value": 0,
+                    "bind": {
+                        "input": "range",
+                        "min": 0,
+                        "max": 2200,
+                        "step": 100,
+                        "name": "Minimum Number of Movies:"
+                    }
+                }
+            ],
+            "width": 600
+        });
+
+        // Embed the Donut Chart Visualization
+        vegaEmbed("#donut-chart", {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "title": "Distribution of Movies by Genre",
+            "description": "A donut chart showing the distribution of movies across different genres, with interactive filters for ratings and genre.",
+            "width": 400,
+            "height": 400,
+            "data": {
+                "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+            },
+            "transform": [
+                {
+                    "aggregate": [{ "op": "count", "as": "count" }],
+                    "groupby": ["genre", "rating"]
+                },
+                {
+                    "filter": "ratingFilter == 'Select your rating' || datum.rating == ratingFilter"
+                },
+                {
+                    "filter": "genreFilter == 'Select genre' || datum.genre == genreFilter"
+                }
+            ],
+            "layer": [
+                {
+                    "mark": {
+                        "type": "arc",
+                        "innerRadius": 80,
+                        "opacity": 0.5
+                    },
+                    "encoding": {
+                        "theta": {
+                            "field": "count",
+                            "type": "quantitative",
+                            "stack": true
+                        },
+                        "color": {
+                            "field": "genre",
+                            "type": "nominal",
+                            "scale": {
+                                "domain": [
+                                    "Action", "Adventure", "Animation", "Biography", "Comedy",
+                                    "Crime", "Drama", "Family", "Fantasy", "History", "Horror",
+                                    "Music", "Musical", "Mystery", "Romance", "Sci-Fi", "Sport",
+                                    "Thriller", "Western"
+                                ],
+                                "range": [
+                                    "#FF9999", "#66B3FF", "#99FF99", "#FFCC99", "#FFD700",
+                                    "#FF69B4", "#FF4500", "#8A2BE2", "#7FFF00", "#D2691E",
+                                    "#ADFF2F", "#20B2AA", "#778899", "#FF6347", "#32CD32",
+                                    "#BA55D3", "#B0E0E6", "#FF8C00", "#FFC0CB"
+                                ]
+                            },
+                            "legend": { "title": "Genre" }
+                        },
+                        "tooltip": [
+                            { "field": "genre", "type": "nominal", "title": "Genre" },
+                            { "field": "count", "type": "quantitative", "title": "Number of Movies" }
+                        ]
+                    }
+                },
+                {
+                    "transform": [
+                        {
+                            "aggregate": [{ "op": "count", "as": "totalCount" }]
+                        },
+                        {
+                            "filter": "datum.totalCount == 0"
+                        }
+                    ],
+                    "mark": {
+                        "type": "text",
+                        "text": "No matching data",
+                        "align": "center",
+                        "baseline": "middle",
+                        "fontSize": 14
+                    },
+                    "encoding": {
+                        "color": { "value": "black" }
+                    }
+                }
+            ],
+            "params": [
+                {
+                    "name": "ratingFilter",
+                    "value": "Select your rating",
+                    "bind": {
+                        "input": "select",
+                        "options": ["Select your rating", "G", "PG", "PG-13", "R", "NC-17"],
+                        "name": "Select Rating:"
+                    }
+                },
+                {
+                    "name": "genreFilter",
+                    "value": "Select genre",
+                    "bind": {
+                        "input": "select",
+                        "options": ["Select genre", "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Drama", "Family", "Fantasy", "History", "Horror", "Music", "Musical", "Mystery", "Romance", "Sci-Fi", "Sport", "Thriller", "Western"],
+                        "name": "Select Genre:"
+                    }
+                }
+            ]
+        });
+    </script>
+</body>
+
+</html>

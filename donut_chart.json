@@ -1,0 +1,101 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "title": "Distribution of Movies by Genre",
+    "description": "A donut chart showing the distribution of movies across different genres, with interactive filters for ratings and genre.",
+    "width": 400,
+    "height": 400,
+    "data": {
+      "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+    },
+    "transform": [
+      {
+        "aggregate": [{"op": "count", "as": "count"}],
+        "groupby": ["genre", "rating"]
+      },
+      {
+        "filter": "ratingFilter == 'Select your rating' || datum.rating == ratingFilter"
+      },
+      {
+        "filter": "genreFilter == 'Select genre' || datum.genre == genreFilter"
+      }
+    ],
+    "layer": [
+      {
+        "mark": {
+          "type": "arc",
+          "innerRadius": 80,
+          "opacity": 0.5
+        },
+        "encoding": {
+          "theta": {
+            "field": "count",
+            "type": "quantitative",
+            "stack": true
+          },
+          "color": {
+            "field": "genre",
+            "type": "nominal",
+            "scale": {
+              "domain": [
+                "Action", "Adventure", "Animation", "Biography", "Comedy",
+                "Crime", "Drama", "Family", "Fantasy", "History", "Horror",
+                "Music", "Musical", "Mystery", "Romance", "Sci-Fi", "Sport",
+                "Thriller", "Western"
+              ],
+              "range": [
+                "#FF9999", "#66B3FF", "#99FF99", "#FFCC99", "#FFD700", 
+                "#FF69B4", "#FF4500", "#8A2BE2", "#7FFF00", "#D2691E", 
+                "#ADFF2F", "#20B2AA", "#778899", "#FF6347", "#32CD32", 
+                "#BA55D3", "#B0E0E6", "#FF8C00", "#FFC0CB"
+              ]
+            },
+            "legend": {"title": "Genre"}
+          },
+          "tooltip": [
+            {"field": "genre", "type": "nominal", "title": "Genre"},
+            {"field": "count", "type": "quantitative", "title": "Number of Movies"}
+          ]
+        }
+      },
+      {
+        "transform": [
+          {
+            "aggregate": [{"op": "count", "as": "totalCount"}]
+          },
+          {
+            "filter": "datum.totalCount == 0"
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "text": "No matching data",
+          "align": "center",
+          "baseline": "middle",
+          "fontSize": 14
+        },
+        "encoding": {
+          "color": {"value": "black"}
+        }
+      }
+    ],
+    "params": [
+      {
+        "name": "ratingFilter",
+        "value": "Select your rating",
+        "bind": {
+          "input": "select",
+          "options": ["Select your rating", "G", "PG", "PG-13", "R", "NC-17"],
+          "name": "Select Rating:"
+        }
+      },
+      {
+        "name": "genreFilter",
+        "value": "Select genre",
+        "bind": {
+          "input": "select",
+          "options": ["Select genre", "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Drama", "Family", "Fantasy", "History", "Horror", "Music", "Musical", "Mystery", "Romance", "Sci-Fi", "Sport", "Thriller", "Western"],
+          "name": "Select Genre:"
+        }
+      }
+    ]
+  }

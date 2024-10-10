@@ -1,0 +1,97 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "width": 800,
+    "height": 400,
+    "data": {
+      "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+    },
+    "params": [
+      {
+        "name": "genre_selection",
+        "bind": {
+          "input": "select",
+          "options": [null, "Drama", "Comedy", "Action", "Thriller", "Romance", "Adventure", "Crime", "Sci-Fi", "Horror"],
+          "labels": ["All", "Drama", "Comedy", "Action", "Thriller", "Romance", "Adventure", "Crime", "Sci-Fi", "Horror"],
+          "name": "Genre: "
+        }
+      },
+      {
+        "name": "decade_selection",
+        "bind": {
+          "input": "select",
+          "options": [null, 1980, 1990, 2000, 2010, 2020],
+          "labels": ["All", "1980s", "1990s", "2000s", "2010s", "2020s"],
+          "name": "Decade: "
+        }
+      }
+    ],
+    "transform": [
+      {
+        "filter": "genre_selection == null || datum.genre == genre_selection"
+      },
+      {
+        "filter": "decade_selection == null || (datum.year >= decade_selection && datum.year < decade_selection + 10)"
+      },
+      {
+        "aggregate": [{
+          "op": "mean",
+          "field": "score",
+          "as": "average_rating"
+        }, {
+          "op": "count",
+          "as": "movie_count"
+        }],
+        "groupby": ["country"]
+      },
+      {
+        "lookup": "country",
+        "from": {
+          "data": {
+            "url": "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json",
+            "format": {
+              "type": "topojson",
+              "feature": "countries"
+            }
+          },
+          "key": "properties.name"
+        },
+        "as": "geo"
+      },
+      {
+        "filter": "datum.geo != null"
+      }
+    ],
+    "projection": {
+      "type": "equirectangular"
+    },
+    "mark": {
+      "type": "geoshape",
+      "stroke": "#fff",
+      "strokeWidth": 0.5
+    },
+    "encoding": {
+      "shape": {
+        "field": "geo",
+        "type": "geojson"
+      },
+      "color": {
+        "field": "average_rating",
+        "type": "quantitative",
+        "scale": {
+          "scheme": "blues",
+          "domain": [0, 10]
+        },
+        "title": "Average Rating"
+      },
+      "tooltip": [
+        {"field": "country", "type": "nominal", "title": "Country"},
+        {"field": "average_rating", "type": "quantitative", "title": "Average Rating", "format": ".2f"},
+        {"field": "movie_count", "type": "quantitative", "title": "Number of Movies"}
+      ]
+    },
+    "config": {
+      "view": {
+        "stroke": null
+      }
+    }
+  }

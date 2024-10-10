@@ -1,0 +1,61 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "title": "Number of Movies by Genre",
+    "description": "A bar chart showing the number of movies in each genre, with interactive filters for genre selection and a slider for the minimum number of movies.",
+    "data": {
+      "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+    },
+    "transform": [
+      {
+        "aggregate": [{"op": "count", "as": "count"}],
+        "groupby": ["genre"]
+      },
+      {
+        "filter": "datum.count >= genreCountFilter"
+      }
+    ],
+    "mark": "bar",
+    "encoding": {
+      "x": {
+        "field": "genre",
+        "type": "nominal",
+        "axis": {"title": "Genre", "labelAngle": -45}
+      },
+      "y": {
+        "field": "count",
+        "type": "quantitative",
+        "axis": {"title": "Number of Movies"}
+      },
+      "tooltip": [
+        {"field": "genre", "type": "nominal", "title": "Genre"},
+        {"field": "count", "type": "quantitative", "title": "Number of Movies"}
+      ],
+      "color": {
+        "condition": {
+          "param": "genreFilter",
+          "field": "genre",
+          "type": "nominal"
+        },
+        "value": "lightgray"
+      }
+    },
+    "params": [
+      {
+        "name": "genreFilter",
+        "select": {"type": "point", "fields": ["genre"]},
+        "bind": "legend"
+      },
+      {
+        "name": "genreCountFilter",
+        "value": 0,
+        "bind": {
+          "input": "range",
+          "min": 0,
+          "max": 2200,
+          "step": 100,
+          "name": "Minimum Number of Movies:"
+        }
+      }
+    ]
+  }
+  

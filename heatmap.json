@@ -1,0 +1,85 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "width": 500,
+    "height": 300,
+    "data": {
+      "url": "https://raw.githubusercontent.com/AbdullaE100/data-viz-assignment2/main/movie.csv"
+    },
+    "params": [
+      {
+        "name": "min_movies",
+        "value": 5,
+        "bind": {
+          "input": "range",
+          "min": 1,
+          "max": 50,
+          "step": 1,
+          "name": "Minimum Movies per Cell: "
+        }
+      },
+      {
+        "name": "country_selection",
+        "bind": {
+          "input": "select",
+          "options": [null, "United States", "United Kingdom", "France", "Germany", "Japan", "Canada", "Italy", "Australia", "Spain", "India"],
+          "labels": ["All", "United States", "United Kingdom", "France", "Germany", "Japan", "Canada", "Italy", "Australia", "Spain", "India"],
+          "name": "Country: "
+        }
+      }
+    ],
+    "transform": [
+      {
+        "calculate": "floor(datum.year / 10) * 10",
+        "as": "decade"
+      },
+      {
+        "filter": "country_selection == null || datum.country == country_selection"
+      },
+      {
+        "aggregate": [
+          {"op": "mean", "field": "score", "as": "average_rating"},
+          {"op": "count", "as": "movie_count"}
+        ],
+        "groupby": ["genre", "decade"]
+      },
+      {
+        "filter": "datum.movie_count >= min_movies"
+      }
+    ],
+    "mark": "rect",
+    "encoding": {
+      "x": {
+        "field": "decade",
+        "type": "ordinal",
+        "title": "Decade"
+      },
+      "y": {
+        "field": "genre",
+        "type": "ordinal",
+        "title": "Genre"
+      },
+      "color": {
+        "field": "average_rating",
+        "type": "quantitative",
+        "scale": {
+          "scheme": "viridis",
+          "domain": [5, 9]
+        },
+        "title": "Average Rating"
+      },
+      "tooltip": [
+        {"field": "genre", "type": "nominal", "title": "Genre"},
+        {"field": "decade", "type": "ordinal", "title": "Decade"},
+        {"field": "average_rating", "type": "quantitative", "title": "Average Rating", "format": ".2f"},
+        {"field": "movie_count", "type": "quantitative", "title": "Number of Movies"}
+      ]
+    },
+    "config": {
+      "view": {
+        "stroke": null
+      },
+      "axis": {
+        "grid": true
+      }
+    }
+  }
