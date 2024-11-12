@@ -1,0 +1,3 @@
+C:/Users/Jasper yong/EmailSystem/cmake-build-debug/CMakeFiles/EmailSystem.dir
+C:/Users/Jasper yong/EmailSystem/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Jasper yong/EmailSystem/cmake-build-debug/CMakeFiles/rebuild_cache.dir

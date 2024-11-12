@@ -1,0 +1,1 @@
+jane.smith@company.com,Performance Review Reminder,""Dear Jane, this is a reminder to submit your self-assessment for the annual performance review. Let us know if you have any questions.""

@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build EmailSystem",
+            "type": "shell",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-std=c++17",
+                "-g",
+                "main.cpp",
+                "Email.cpp",
+                "EmailManager.cpp",
+                "User.cpp",
+                "Queue.cpp",
+                "Map.cpp",
+                "-o",
+                "EmailSystem"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Generated task to build EmailSystem"
+        }
+    ]
+}
