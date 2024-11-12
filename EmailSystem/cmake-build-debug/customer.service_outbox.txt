@@ -1,1 +1,0 @@
-john.doe@company.com,Account Security Alert,""Dear John, we’ve detected a login attempt from a new device. If this wasn’t you, please reset your password immediately.""

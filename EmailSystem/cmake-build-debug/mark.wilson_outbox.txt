@@ -1,1 +1,0 @@
-jane.smith@company.com,Request for Refund,""Hello, I would like to request a refund for order #12345 due to a product defect. Please let me know the process to initiate this request.""

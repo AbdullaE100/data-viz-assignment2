@@ -1,1 +1,0 @@
-info@company.com,Appointment Confirmation,""Dear John, your appointment with Dr. Miller has been confirmed for Thursday at 3 PM. Please arrive 15 minutes early for check-in.""
